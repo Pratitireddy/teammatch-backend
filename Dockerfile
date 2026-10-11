@@ -24,8 +24,7 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Copy the compiled JAR artifact from builder stage
 COPY --from=builder /workspace/target/*.jar app.jar
 
-# Copy public CA certificate and runtime entrypoint script
-COPY aiven-ca.pem .
+# Copy runtime entrypoint script (CA cert is injected via AIVEN_CA_PEM_B64 env var at runtime)
 COPY entrypoint.sh .
 
 # Ensure entrypoint is executable and owned by appuser

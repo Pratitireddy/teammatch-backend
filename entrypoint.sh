@@ -16,9 +16,24 @@ if echo "$DB_URL" | grep -q "aiven-truststore.jks"; then
         exit 1
     fi
 
+    # Ensure aiven-ca.pem is available (file on disk OR decoded from env var)
     if [ ! -f "aiven-ca.pem" ]; then
-        echo "ERROR: aiven-ca.pem certificate file not found in $(pwd)." >&2
-        exit 1
+        if [ -z "$AIVEN_CA_PEM_B64" ]; then
+            echo "ERROR: aiven-ca.pem not found and AIVEN_CA_PEM_B64 env var is not set." >&2
+            exit 1
+        fi
+        echo "Decoding AIVEN_CA_PEM_B64 -> aiven-ca.pem ..."
+        echo "$AIVEN_CA_PEM_B64" | base64 -d > aiven-ca.pem
+
+        # Validate that the decoded file looks like a PEM certificate
+        if ! head -n1 aiven-ca.pem | grep -q "^-----BEGIN CERTIFICATE-----"; then
+            echo "ERROR: Decoded aiven-ca.pem does not appear to be a valid PEM certificate." >&2
+            rm -f aiven-ca.pem
+            exit 1
+        fi
+        echo "aiven-ca.pem decoded and validated ($(wc -c < aiven-ca.pem) bytes)."
+    else
+        echo "Using existing aiven-ca.pem from build context."
     fi
 
     # Generate truststore dynamically at runtime if not present
