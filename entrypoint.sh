@@ -62,6 +62,27 @@ if echo "$DB_URL" | grep -q "aiven-truststore.jks"; then
     fi
 fi
 
-# 3. Launch Spring Boot application
+# 3. Non-sensitive TCP Connectivity Diagnostic
+if [ -n "$DB_URL" ]; then
+    echo "=== DB Connectivity Diagnostic ==="
+    # Extract host and port from JDBC URL without exposing credentials or params
+    CLEAN_TARGET=$(echo "$DB_URL" | sed -e 's|^jdbc:[^/]*//||' -e 's|/.*||')
+    DIAG_HOST=$(echo "$CLEAN_TARGET" | cut -d: -f1)
+    DIAG_PORT=$(echo "$CLEAN_TARGET" | cut -s -d: -f2)
+    [ -z "$DIAG_PORT" ] && DIAG_PORT=3306
+
+    if [ -n "$DIAG_HOST" ]; then
+        echo "Testing TCP connectivity to $DIAG_HOST:$DIAG_PORT (timeout 5s)..."
+        if nc -w 5 -z "$DIAG_HOST" "$DIAG_PORT" 2>/dev/null; then
+            echo "DIAGNOSTIC RESULT: TCP connection to $DIAG_HOST:$DIAG_PORT SUCCEEDED."
+        else
+            echo "DIAGNOSTIC RESULT: TCP connection to $DIAG_HOST:$DIAG_PORT TIMED OUT / FAILED."
+            echo "WARNING: Outbound TCP to $DIAG_HOST:$DIAG_PORT is unreachable from this environment."
+        fi
+    fi
+    echo "==================================="
+fi
+
+# 4. Launch Spring Boot application
 echo "Starting Spring Boot application on port $APP_PORT..."
 exec java -Dserver.port="$APP_PORT" -jar app.jar
