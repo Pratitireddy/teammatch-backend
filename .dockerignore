@@ -1,0 +1,14 @@
+target/
+*.class
+*.jar
+*.war
+.idea/
+*.iml
+.vscode/
+.env
+.env.*
+application-local.yml
+application-local.properties
+*.local.yml
+*.local.properties
+*.jks

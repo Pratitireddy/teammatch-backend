@@ -1,0 +1,33 @@
+# Build output
+target/
+*.class
+*.jar
+*.war
+
+# IDE files
+.idea/
+*.iml
+*.iws
+.vscode/
+*.swp
+*.swo
+
+# Maven wrapper
+!.mvn/wrapper/maven-wrapper.jar
+
+# Secrets — never commit these
+.env
+.env.*
+application-local.yml
+application-local.properties
+*.local.yml
+*.local.properties
+*.jks
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Aiven TLS certificates and truststores
+*.pem
+*.jks
