@@ -31,4 +31,4 @@ app:
     secret: ${JWT_SECRET}
     expiration: 86400000
   cors:
-    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000}
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,https://teammatch-frontend-ten.vercel.app}

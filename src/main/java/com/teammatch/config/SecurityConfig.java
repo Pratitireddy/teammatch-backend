@@ -22,24 +22,42 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final String VERCEL_FRONTEND_ORIGIN = "https://teammatch-frontend-ten.vercel.app";
+
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
 
-    @Value("#{'${app.cors.allowed-origins}'.split(',')}")
-    private List<String> allowedOrigins;
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://127.0.0.1:3000,https://teammatch-frontend-ten.vercel.app}")
+    private String rawAllowedOrigins = "http://localhost:3000,http://127.0.0.1:3000,https://teammatch-frontend-ten.vercel.app";
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, UserDetailsService userDetailsService,
             JwtAuthenticationEntryPoint unauthorizedHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
         this.unauthorizedHandler = unauthorizedHandler;
+    }
+
+    private List<String> resolveAllowedOrigins() {
+        Set<String> origins = new LinkedHashSet<>();
+        if (rawAllowedOrigins != null && !rawAllowedOrigins.isBlank()) {
+            Arrays.stream(rawAllowedOrigins.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .forEach(origins::add);
+        }
+        origins.add(VERCEL_FRONTEND_ORIGIN);
+        return new ArrayList<>(origins);
     }
 
     @Bean
@@ -50,6 +68,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
@@ -79,9 +98,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedOrigins(resolveAllowedOrigins());
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
