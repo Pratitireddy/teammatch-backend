@@ -21,9 +21,11 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long> 
     Optional<Opportunity> findByIdWithPessimisticLock(@Param("id") Long id);
 
     // All opportunities created by a specific user
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"creator"})
     List<Opportunity> findByCreatorId(Long creatorId);
 
     // Public listing: open opportunities, optionally filtered by type, with pagination
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"creator"})
     @Query("SELECT o FROM Opportunity o WHERE o.status = :status " +
            "AND (:type IS NULL OR o.type = :type) " +
            "AND (:keyword IS NULL OR LOWER(o.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +

@@ -7,7 +7,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       connection-timeout: 30000
-      maximum-pool-size: 5
+      maximum-pool-size: ${HIKARI_MAX_POOL_SIZE:10}
       initialization-fail-timeout: 60000
 
   jpa:
@@ -17,6 +17,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        default_batch_fetch_size: 20
 
   flyway:
     enabled: true

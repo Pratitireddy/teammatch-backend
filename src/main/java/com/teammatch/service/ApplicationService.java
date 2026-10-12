@@ -82,6 +82,7 @@ public class ApplicationService {
         return mapToDto(application);
     }
 
+    @Transactional(readOnly = true)
     public List<ApplicationDto> getMyApplications(String email) {
         User student = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
@@ -90,6 +91,7 @@ public class ApplicationService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<ApplicationDto> getOpportunityApplications(Long opportunityId, String email) {
         Opportunity opportunity = opportunityRepository.findById(opportunityId)
                 .orElseThrow(() -> new RuntimeException("Opportunity not found"));
@@ -103,6 +105,7 @@ public class ApplicationService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public ApplicationDto getApplication(Long id, String email) {
         Application application = applicationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Application not found"));

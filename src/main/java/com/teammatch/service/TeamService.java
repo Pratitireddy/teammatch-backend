@@ -61,6 +61,7 @@ public class TeamService {
         return team;
     }
 
+    @Transactional(readOnly = true)
     public List<TeamDto> getMyTeams(Long studentId) {
         List<TeamMember> memberships = teamMemberRepository.findByStudentId(studentId);
         return memberships.stream()
@@ -68,6 +69,7 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public TeamDto getTeamDetails(Long teamId, Long currentUserId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new RuntimeException("Team not found"));
